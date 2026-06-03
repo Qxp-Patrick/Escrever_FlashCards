@@ -1,0 +1,703 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Voz Luno - Flashcards Dinâmicos</title>
+    <style>
+        :root {
+            --primary-color: #4A90E2;
+            --primary-hover: #357ABD;
+            --secondary-color: #2ECC71;
+            --secondary-hover: #27AE60;
+            --danger-color: #E74C3C;
+            --danger-hover: #C0392B;
+            --warning-color: #F39C12;
+            --warning-hover: #D35400;
+            --bg-color: #F5F7FA;
+            --card-bg: #FFFFFF;
+            --text-main: #2C3E50;
+            --text-muted: #7F8C8D;
+            --border-color: #E2E8F0;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 25px;
+            width: 100%;
+            max-width: 600px;
+        }
+
+        header h1 {
+            font-size: 28px;
+            color: var(--text-main);
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+
+        header p {
+            color: var(--text-muted);
+            font-size: 15px;
+        }
+
+        /* Menu de Navegação por Abas */
+        .nav-tabs {
+            display: flex;
+            width: 100%;
+            max-width: 600px;
+            background: #E2E8F0;
+            padding: 4px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+
+        .tab-button {
+            flex: 1;
+            padding: 10px;
+            background: transparent;
+            border: none;
+            color: var(--text-main);
+            font-weight: 600;
+            font-size: 15px;
+            cursor: pointer;
+            border-radius: 6px;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .tab-button.active {
+            background: var(--card-bg);
+            color: var(--primary-color);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+
+        /* Containers das Telas */
+        .view-section {
+            display: none;
+            width: 100%;
+            max-width: 600px;
+        }
+
+        .view-section.active {
+            display: block;
+        }
+
+        .card-box {
+            background-color: var(--card-bg);
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+            border: 1px solid var(--border-color);
+            margin-bottom: 20px;
+        }
+
+        h2 {
+            font-size: 18px;
+            margin-bottom: 15px;
+            color: var(--text-main);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        /* Formulários */
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 6px;
+            font-weight: 600;
+            font-size: 14px;
+            color: var(--text-main);
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.2s;
+            background-color: #FAFAFA;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            background-color: #FFF;
+        }
+
+        /* Botões */
+        .btn {
+            width: 100%;
+            padding: 12px 20px;
+            border: none;
+            border-radius: 8px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            transition: background-color 0.2s, transform 0.1s;
+        }
+
+        .btn:active {
+            transform: scale(0.98);
+        }
+
+        .btn-primary { background-color: var(--primary-color); color: white; }
+        .btn-primary:hover { background-color: var(--primary-hover); }
+
+        .btn-secondary { background-color: var(--secondary-color); color: white; }
+        .btn-secondary:hover { background-color: var(--secondary-hover); }
+
+        .btn-warning { background-color: var(--warning-color); color: white; }
+        .btn-warning:hover { background-color: var(--warning-hover); }
+
+        /* MODO GAME (FLASHCARDS) */
+        .game-controls {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .btn-toggle-mode {
+            background-color: #FFF;
+            border: 2px solid var(--primary-color);
+            color: var(--primary-color);
+        }
+        .btn-toggle-mode:hover {
+            background-color: #EDF5FF;
+        }
+
+        /* Container do Flashcard Dinâmico */
+        .flashcard-container {
+            perspective: 1000px;
+            width: 100%;
+            height: 220px;
+            margin-bottom: 20px;
+            cursor: pointer;
+        }
+
+        .flashcard {
+            width: 100%;
+            height: 100%;
+            position: relative;
+            transform-style: preserve-3d;
+            transition: transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.08);
+            border-radius: 16px;
+        }
+
+        .flashcard.flipped {
+            transform: rotateY(180deg);
+        }
+
+        .card-face {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            backface-visibility: hidden;
+            border-radius: 16px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            text-align: center;
+            border: 2px solid var(--border-color);
+        }
+
+        .card-front {
+            background: linear-gradient(135deg, #FFFFFF 0%, #F8FAFC 100%);
+            color: var(--text-main);
+        }
+
+        .card-back {
+            background: linear-gradient(135deg, #ECEFF1 0%, #CFD8DC 100%);
+            color: #1A252F;
+            transform: rotateY(180deg);
+            border-color: #B0BEC5;
+        }
+
+        .card-label {
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            color: var(--text-muted);
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+
+        .card-text {
+            font-size: 26px;
+            font-weight: 700;
+            word-break: break-word;
+        }
+
+        .card-hint {
+            font-size: 13px;
+            color: var(--text-muted);
+            position: absolute;
+            bottom: 15px;
+        }
+
+        /* Navegação do Game */
+        .game-navigation {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .btn-nav {
+            flex: 1;
+            background-color: #FFF;
+            border: 1px solid var(--border-color);
+            color: var(--text-main);
+        }
+        .btn-nav:hover {
+            background-color: #F1F5F9;
+        }
+
+        .game-progress {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text-muted);
+            white-space: nowrap;
+        }
+
+        /* MODO LISTA / CONSULTA */
+        .lista-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .lista-palavras {
+            list-style: none;
+            max-height: 400px;
+            overflow-y: auto;
+            padding-right: 5px;
+        }
+
+        .item-palavra {
+            background-color: #FFF;
+            padding: 14px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+            transition: box-shadow 0.2s;
+        }
+
+        .item-palavra:hover {
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+        }
+
+        .palavra-info {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+
+        .palavra-pt {
+            font-weight: 600;
+            color: var(--text-main);
+            font-size: 15px;
+        }
+
+        .palavra-es {
+            color: #7F8C8D;
+            font-size: 14px;
+            font-style: italic;
+        }
+
+        .item-actions {
+            display: flex;
+            gap: 6px;
+        }
+
+        .btn-action {
+            padding: 6px 10px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .btn-edit { background-color: #FFEAA7; color: #D35400; }
+        .btn-edit:hover { background-color: #FDCB6E; }
+
+        .btn-del { background-color: #FFD2D2; color: #C0392B; }
+        .btn-del:hover { background-color: #FFB3B3; }
+
+        /* Mensagem de lista vazia */
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: var(--text-muted);
+        }
+        .empty-state svg {
+            margin-bottom: 10px;
+            opacity: 0.5;
+        }
+
+        /* Responsividade Básica */
+        @media(max-width: 480px) {
+            body { padding: 10px; }
+            .card-text { font-size: 22px; }
+            .flashcard-container { height: 190px; }
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>Voz Luno — Flashcards</h1>
+        <p>Pratique Conversação em Espanhol</p>
+    </header>
+
+    <!-- ABAS DE NAVEGAÇÃO -->
+    <div class="nav-tabs">
+        <button class="tab-button active" onclick="switchView('game')">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+            Modo Game
+        </button>
+        <button class="tab-button" onclick="switchView('cadastro')">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+            Cadastrar
+        </button>
+        <button class="tab-button" onclick="switchView('lista')">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="8" y1="6" x2="21" y2="6"></line><line x1="8" y1="12" x2="21" y2="12"></line><line x1="8" y1="18" x2="21" y2="18"></line><line x1="3" y1="6" x2="3.01" y2="6"></line><line x1="3" y1="12" x2="3.01" y2="12"></line><line x1="3" y1="18" x2="3.01" y2="18"></line></svg>
+            Sua Lista
+        </button>
+    </div>
+
+    <!-- TELA 1: MODO GAME (TREINO) -->
+    <div id="view-game" class="view-section active">
+        <div class="card-box">
+            <div class="game-controls">
+                <button class="btn btn-toggle-mode" onclick="toggleDirection()">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="17 1 21 5 17 9"></polyline><path d="M3 11V9a4 4 0 0 1 4-4h14"></path><polyline points="7 23 3 19 7 15"></polyline><path d="M21 13v2a4 4 0 0 1-4 4H3"></path></svg>
+                    Inverter: <span id="direction-label">PT ➔ ES</span>
+                </button>
+            </div>
+
+            <!-- O Cartão Interativo -->
+            <div class="flashcard-container" onclick="flipCard()">
+                <div id="flashcard" class="flashcard">
+                    <!-- Frente do Cartão -->
+                    <div class="card-face card-front">
+                        <div id="card-front-label" class="card-label">Português</div>
+                        <div id="card-front-text" class="card-text">Nenhum cartão cadastrado</div>
+                        <div class="card-hint">Clique para revelar a resposta</div>
+                    </div>
+                    <!-- Verso do Cartão -->
+                    <div class="card-face card-back">
+                        <div id="card-back-label" class="card-label">Espanhol</div>
+                        <div id="card-back-text" class="card-text">---</div>
+                        <div class="card-hint">Clique para ocultar de novo</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Controles de Navegação -->
+            <div class="game-navigation">
+                <button class="btn btn-nav" onclick="navCard(-1)">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"></polyline></svg>
+                    Anterior
+                </button>
+                <span id="game-progress" class="game-progress">0 / 0</span>
+                <button class="btn btn-nav" onclick="navCard(1)">
+                    Próximo
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"></polyline></svg>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- TELA 2: FORMULÁRIO DE CADASTRO / EDIÇÃO -->
+    <div id="view-cadastro" class="view-section">
+        <div class="card-box">
+            <h2 id="cadastro-titulo">Cadastrar Novo Cartão</h2>
+            <input type="hidden" id="edit-index" value="-1">
+            
+            <div class="form-group">
+                <label for="portugues">Palavra/Frase em Português:</label>
+                <input type="text" id="portugues" placeholder="Ex: Bom dia">
+            </div>
+            
+            <div class="form-group">
+                <label for="espanhol">Palavra/Frase em Espanhol:</label>
+                <input type="text" id="espanhol" placeholder="Ex: Buenos días">
+            </div>
+            
+            <div style="display: flex; gap: 10px;">
+                <button id="btn-cancelar-edicao" class="btn btn-warning" style="display: none; width: 40%;" onclick="cancelarEdicao()">Cancelar</button>
+                <button id="btn-salvar" class="btn btn-primary" onclick="salvarCartao()">Salvar Cartão</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- TELA 3: LISTA COMPLETA (MODO CONSULTA) -->
+    <div id="view-lista" class="view-section">
+        <div class="card-box">
+            <div class="lista-header">
+                <h2>Palavras Cadastradas</h2>
+                <span id="total-contador" style="font-weight: bold; font-size: 14px; color: var(--primary-color);">Total: 0</span>
+            </div>
+            
+            <ul id="listaPalavras" class="lista-palavras">
+                <!-- Injetado dinamicamente via JS -->
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        // --- BANCO DE DADOS LOCAL ---
+        let cartoes = JSON.parse(localStorage.getItem('meusCartoes')) || [];
+        
+        // --- ESTADOS DO JOGO ---
+        let currentIndex = 0;      // Cartão atual exibido no Modo Game
+        let isInverted = false;    // false = PT -> ES | true = ES -> PT
+
+        // --- CONTROLE DE TELAS (ABAS) ---
+        function switchView(viewName) {
+            document.querySelectorAll('.view-section').forEach(section => section.classList.remove('active'));
+            document.querySelectorAll('.tab-button').forEach(btn => btn.classList.remove('active'));
+
+            document.getElementById(`view-${viewName}`).classList.add('active');
+            
+            // Ativa o botão da aba correta
+            const eventTargetIndex = viewName === 'game' ? 0 : viewName === 'cadastro' ? 1 : 2;
+            document.querySelectorAll('.tab-button')[eventTargetIndex].classList.add('active');
+
+            // Se for para a aba de jogo ou lista, atualiza os dados
+            if (viewName === 'game') {
+                resetCardFlip();
+                renderGameCard();
+            } else if (viewName === 'lista') {
+                renderLista();
+            }
+        }
+
+        // --- LÓGICA DO MODO GAME ---
+        function flipCard() {
+            if (cartoes.length === 0) return;
+            document.getElementById('flashcard').classList.toggle('flipped');
+        }
+
+        function resetCardFlip() {
+            document.getElementById('flashcard').classList.remove('flipped');
+        }
+
+        function toggleDirection() {
+            isInverted = !isInverted;
+            document.getElementById('direction-label').innerText = isInverted ? "ES ➔ PT" : "PT ➔ ES";
+            resetCardFlip();
+            
+            // Aguarda um pequeno tempo da animação de reset antes de mudar os textos
+            setTimeout(renderGameCard, 150);
+        }
+
+        function renderGameCard() {
+            const frontLabel = document.getElementById('card-front-label');
+            const frontText = document.getElementById('card-front-text');
+            const backLabel = document.getElementById('card-back-label');
+            const backText = document.getElementById('card-back-text');
+            const progress = document.getElementById('game-progress');
+
+            if (cartoes.length === 0) {
+                frontLabel.innerText = "Aviso";
+                frontText.innerText = "Nenhum cartão criado ainda.";
+                backLabel.innerText = "Aviso";
+                backText.innerText = "Vá na aba 'Cadastrar' para começar!";
+                progress.innerText = "0 / 0";
+                return;
+            }
+
+            // Garante que o index está dentro dos limites corretos
+            if (currentIndex >= cartoes.length) currentIndex = 0;
+            if (currentIndex < 0) currentIndex = cartoes.length - 1;
+
+            const itemAtual = cartoes[currentIndex];
+
+            if (!isInverted) {
+                // Modo Padrão: Frente PT, Verso ES
+                frontLabel.innerText = "Português";
+                frontText.innerText = itemAtual.pt;
+                backLabel.innerText = "Espanhol";
+                backText.innerText = itemAtual.es;
+            } else {
+                // Modo Invertido: Frente ES, Verso PT
+                frontLabel.innerText = "Espanhol";
+                frontText.innerText = itemAtual.es;
+                backLabel.innerText = "Português";
+                backText.innerText = itemAtual.pt;
+            }
+
+            progress.innerText = `${currentIndex + 1} / ${cartoes.length}`;
+        }
+
+        function navCard(step) {
+            if (cartoes.length <= 1) return;
+            currentIndex += step;
+            resetCardFlip();
+            // Transição suave após desvirar o card
+            setTimeout(renderGameCard, 200);
+        }
+
+
+        // --- LÓGICA DE CADASTRO E EDIÇÃO ---
+        function salvarCartao() {
+            const inputPt = document.getElementById('portugues');
+            const inputEs = document.getElementById('espanhol');
+            const editIndexInput = document.getElementById('edit-index');
+
+            const valPt = inputPt.value.trim();
+            const valEs = inputEs.value.trim();
+            const editIndex = parseInt(editIndexInput.value);
+
+            if (valPt === '' || valEs === '') {
+                alert('Preencha os campos em Português e Espanhol!');
+                return;
+            }
+
+            if (editIndex === -1) {
+                // Novo Cadastro
+                cartoes.push({ pt: valPt, es: valEs });
+            } else {
+                // Atualização de registro existente
+                cartoes[editIndex] = { pt: valPt, es: valEs };
+                cancelarEdicao(); // Reseta estado do formulário
+            }
+
+            // Salva dados no LocalStorage
+            localStorage.setItem('meusCartoes', JSON.stringify(cartoes));
+
+            // Limpa os inputs
+            inputPt.value = '';
+            inputEs.value = '';
+
+            // Redireciona de volta para o jogo ou para a lista
+            if (editIndex !== -1) {
+                switchView('lista');
+            } else {
+                // Se acabou de cadastrar o primeiro item, define index para 0
+                if (cartoes.length === 1) currentIndex = 0;
+                switchView('game');
+            }
+        }
+
+        function prepararEdicao(index) {
+            const item = cartoes[index];
+            document.getElementById('portugues').value = item.pt;
+            document.getElementById('espanhol').value = item.es;
+            document.getElementById('edit-index').value = index;
+
+            document.getElementById('cadastro-titulo').innerText = "Editar Cartão";
+            document.getElementById('btn-salvar').innerText = "Salvar Alterações";
+            document.getElementById('btn-cancelar-edicao').style.display = "inline-flex";
+
+            switchView('cadastro');
+        }
+
+        function cancelarEdicao() {
+            document.getElementById('portugues').value = '';
+            document.getElementById('espanhol').value = '';
+            document.getElementById('edit-index').value = "-1";
+
+            document.getElementById('cadastro-titulo').innerText = "Cadastrar Novo Cartão";
+            document.getElementById('btn-salvar').innerText = "Salvar Cartão";
+            document.getElementById('btn-cancelar-edicao').style.display = "none";
+            
+            switchView('lista');
+        }
+
+        function excluirCartao(index) {
+            if (confirm("Tem certeza que deseja apagar este cartão?")) {
+                cartoes.splice(index, 1);
+                localStorage.setItem('meusCartoes', JSON.stringify(cartoes));
+                
+                // Ajusta o ponteiro de exibição do game se necessário
+                if (currentIndex >= cartoes.length && cartoes.length > 0) {
+                    currentIndex = cartoes.length - 1;
+                }
+                
+                renderLista();
+            }
+        }
+
+
+        // --- LÓGICA DE RENDERIZAÇÃO DA LISTA ---
+        function renderLista() {
+            const listaHTML = document.getElementById('listaPalavras');
+            const totalContador = document.getElementById('total-contador');
+            listaHTML.innerHTML = '';
+
+            totalContador.innerText = `Total: ${cartoes.length}`;
+
+            if (cartoes.length === 0) {
+                listaHTML.innerHTML = `
+                    <div class="empty-state">
+                        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+                        <p>Você ainda não cadastrou nenhuma palavra.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            cartoes.forEach((cartao, index) => {
+                const li = document.createElement('li');
+                li.className = 'item-palavra';
+                li.innerHTML = `
+                    <div class="palavra-info">
+                        <span class="palavra-pt">${cartao.pt}</span>
+                        <span class="palavra-es">${cartao.es}</span>
+                    </div>
+                    <div class="item-actions">
+                        <button class="btn-action btn-edit" onclick="prepararEdicao(${index})">Editar</button>
+                        <button class="btn-action btn-del" onclick="excluirCartao(${index})">Apagar</button>
+                    </div>
+                `;
+                listaHTML.appendChild(li);
+            });
+        }
+
+        // Inicialização do Game ao carregar a página
+        renderGameCard();
+    </script>
+</body>
+</html>
