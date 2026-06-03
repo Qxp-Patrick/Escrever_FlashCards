@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Treino de Idiomas - Flashcards</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f0f2f5;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        h1 {
+            color: #333;
+        }
+
+        .container {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            width: 100%;
+            max-width: 500px;
+            margin-bottom: 20px;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #555;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+            font-size: 16px;
+        }
+
+        button {
+            width: 100%;
+            padding: 12px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            font-size: 16px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+
+        h2 {
+            color: #444;
+            margin-top: 10px;
+        }
+
+        .lista-palavras {
+            list-style: none;
+            padding: 0;
+            width: 100%;
+        }
+
+        .item-palavra {
+            background-color: #f8f9fa;
+            padding: 12px;
+            border-bottom: 1px solid #ddd;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-radius: 4px;
+            margin-bottom: 5px;
+        }
+
+        .btn-excluir {
+            background-color: #dc3545;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            width: auto;
+            font-size: 14px;
+        }
+
+        .btn-excluir:hover {
+            background-color: #c82333;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Criador de Flashcards</h1>
+
+    <div class="container">
+        <h2>Cadastrar Novo Cartão</h2>
+        <div class="form-group">
+            <label for="portugues">Palavra em Português:</label>
+            <input type="text" id="portugues" placeholder="Ex: Gato">
+        </div>
+        <div class="form-group">
+            <label for="espanhol">Palavra em Espanhol:</label>
+            <input type="text" id="espanhol" placeholder="Ex: Gato / Gata">
+        </div>
+        <button onclick="salvarCartao()">Salvar Cartão</button>
+    </div>
+
+    <div class="container">
+        <h2>Sua Lista de Palavras</h2>
+        <ul id="listaPalavras" class="lista-palavras">
+            </ul>
+    </div>
+
+    <script>
+        // Array para guardar os cartões (tenta carregar o que já foi salvo antes)
+        let cartoes = JSON.parse(localStorage.getItem('meusCartoes')) || [];
+
+        // Função para atualizar a lista na tela e salvar no navegador
+        function atualizarTela() {
+            const listaHTML = document.getElementById('listaPalavras');
+            listaHTML.innerHTML = ''; // Limpa a lista antes de redesenhar
+
+            // Salva a lista atualizada no localStorage
+            localStorage.setItem('meusCartoes', JSON.stringify(cartoes));
+
+            // Desenha cada cartão na tela
+            cartoes.forEach((cartao, index) => {
+                const li = document.createElement('li');
+                li.className = 'item-pal
